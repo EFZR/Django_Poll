@@ -1,31 +1,23 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from .forms import PollForm, Poll_Questions_Form, Poll_Questions_Options_Form
 from .models import Poll, Poll_Questions, Poll_Question_Options
 from Logging.logger_base import log
 
-# Create your views here.
+# get_success_url is a method that returns the URL to redirect to after processing a valid form.
 
 
-def index(request):
-    return render(request, 'website/index.html')
+class IndexListView(ListView):
+    model = Poll
+    context_object_name = 'polls'
+    template_name = 'website/index.html'
 
-
-# class CreatePollView_ToQuestion(CreateView):
-#     template_name = 'website/crud/poll.html'
-#     model = Poll
-#     form_class = PollForm
-#     parameter = None
-
-#     def form_valid(self, form):
-#         return super(CreatePollView_ToQuestion, self).form_valid(form)
-
-#     # get_success_url is a method that returns the URL to redirect to after processing a valid form.
-#     def get_success_url(self):
-#         return reverse_lazy('create_question', kwargs={'pk': self.object.id})
+    def get_queryset(self):
+        return Poll.objects.filter(is_active=True)
 
 
 class PollListView(ListView):
@@ -263,3 +255,20 @@ class DeleteOptionView(DeleteView):
 
     def get_success_url(self) -> str:
         return reverse_lazy('options', kwargs={'question_pk': self.kwargs['question_pk']})
+
+
+class VoteView(TemplateView):
+    template_name = 'website/response.html'
+    context_object_name = 'response'
+    
+    def get_context_data(self, **kwargs):
+        context = super(VoteView, self).get_context_data(**kwargs)
+        context['poll'] = poll = Poll.objects.get(id=self.kwargs['poll_pk'])
+        context['questions'] = questions = Poll_Questions.objects.filter(poll_id=poll.id)
+        options = []
+        for question in questions:
+            options.append(Poll_Question_Options.objects.filter(question_id=question.id))
+            
+        context['options'] = options
+            
+        return context

@@ -2,7 +2,7 @@ from django.urls import path
 from website.views import *
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', IndexListView.as_view(), name='index'),
     path('polls/', PollListView.as_view(), name='polls'),
     path('create_poll/', CreatePollView.as_view(), name='create_poll'),
     path('update_poll/<int:pk>', UpdatePollView.as_view(), name='update_poll'),
@@ -15,4 +15,5 @@ urlpatterns = [
     path('create_option/<int:question_pk>', CreateOptionView.as_view(),name='create_option'),
     path('update_option/<int:question_pk>/<int:pk>', UpdateOptionView.as_view(),name='update_option'),
     path('delete_option/<int:question_pk>/<int:pk>', DeleteOptionView.as_view(),name='delete_option'),
+    path('vote/<int:poll_pk>', VoteView.as_view(),name='vote'),
 ]
