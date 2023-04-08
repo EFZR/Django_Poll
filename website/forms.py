@@ -17,25 +17,19 @@ class PollForm(forms.ModelForm):
 
 class Poll_Questions_Form(forms.ModelForm):
     
-    poll = forms.ModelChoiceField(
-      queryset=Poll.objects.all(),
-      label='',
-      widget=forms.Select(attrs={'class': 'form-select'}),
-    )
-    
     question_text = forms.CharField(
         max_length=100,
         label='',
         widget=forms.TextInput(attrs={'class': 'form-control',
-                                      'placeholder': 'Question'}),
+                                      'placeholder': 'Add a new Query'}),
     )
 
     class Meta:
         model = Poll_Questions
-        fields = ['poll', 'question_text']
+        fields = ['question_text']
 
 
-class Poll_Questions_Options_Form(forms.Form):
+class Poll_Questions_Options_Form(forms.ModelForm):
     option_text = forms.CharField(
         max_length=100,
         label='',
@@ -45,4 +39,4 @@ class Poll_Questions_Options_Form(forms.Form):
 
     class Meta:
         model = Poll_Question_Options
-        fields = ['poll_id', 'question_id', 'option_text']
+        fields = ['option_text']

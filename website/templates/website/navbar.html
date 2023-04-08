@@ -1,6 +1,6 @@
 <nav class="navbar navbar-dark bg-primary">
   <div class="container-fluid">
-    <a class="navbar-brand">Django Polls Project</a>
+    <a class="navbar-brand" href="{% url 'index' %}">Django Polls Project</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button"
       aria-controls="offcanvasExample">
       <span class="navbar-toggler-icon"></span>
@@ -16,8 +16,7 @@
   <hr>
   <div class="offcanvas-body">
     <ul class="list-group">
-      <li class="list-group-item"><a href="#">Available Polls</a></li>
-      <li class="list-group-item"><a href="{% url 'create_poll' %}">Create Poll</a></li>
+      <li class="list-group-item"><a href="{% url 'polls' %}">Manage Polls</a></li>
       <li class="list-group-item"><a href="#">Results</a></li>
     </ul>
   </div>
