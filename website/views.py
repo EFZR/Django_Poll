@@ -5,7 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .forms import PollForm, Poll_Questions_Form, Poll_Questions_Options_Form
 from .models import Poll, Poll_Questions, Poll_Question_Options
-from logging import log
+from Logging.logger_base import log
 
 # Create your views here.
 
@@ -43,10 +43,12 @@ class CreatePollView(CreateView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Poll created successfully')
+        log.info('Poll created successfully')
         return super(CreatePollView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Poll creation failed')
+        log.error('Poll creation failed')
         return super().form_invalid(form)
 
 
@@ -58,10 +60,12 @@ class UpdatePollView(UpdateView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Poll updated successfully')
+        log.info('Poll updated successfully')
         return super(UpdatePollView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Poll update failed')
+        log.error('Poll update failed')
         return super().form_invalid(form)
 
 
@@ -73,10 +77,12 @@ class DeletePollView(DeleteView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Poll deleted successfully')
+        log.info('Poll deleted successfully')
         return super(DeletePollView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Poll deletion failed')
+        log.error('Poll deletion failed')
         return super().form_invalid(form)
 
 
@@ -100,12 +106,14 @@ class CreateQuestionView(CreateView):
     form_class = Poll_Questions_Form
 
     def form_valid(self, form):
-        messages.success(self.request, 'Question created successfully')
         form.instance.poll_id = self.kwargs['poll_pk']
+        messages.success(self.request, 'Question created successfully')
+        log.info('Question created successfully')
         return super(CreateQuestionView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Question creation failed')
+        log.error('Question creation failed')
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -124,10 +132,12 @@ class UpdateQuestionView(UpdateView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Question updated successfully')
+        log.info('Question updated successfully')
         return super(UpdateQuestionView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Question update failed')
+        log.error('Question update failed')
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -146,10 +156,12 @@ class DeleteQuestionView(DeleteView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Question deleted successfully')
+        log.info('Question deleted successfully')
         return super(DeleteQuestionView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Question deletion failed')
+        log.error('Question deletion failed')
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -168,8 +180,9 @@ class OptionListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(OptionListView, self).get_context_data(**kwargs)
-        context['question'] = Poll_Questions.objects.get(
+        context['question'] = temp_id_question = Poll_Questions.objects.get(
             id=self.kwargs['question_pk'])
+        context['poll'] = Poll.objects.get(id=temp_id_question.poll_id)
         return context
 
     def get_queryset(self):
@@ -182,12 +195,14 @@ class CreateOptionView(CreateView):
     form_class = Poll_Questions_Options_Form
 
     def form_valid(self, form):
-        messages.success(self.request, 'Option created successfully')
         form.instance.question_id = self.kwargs['question_pk']
+        messages.success(self.request, 'Option created successfully')
+        log.info('Option created successfully')
         return super(CreateOptionView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Option creation failed')
+        log.error('Option creation failed')
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -198,8 +213,8 @@ class CreateOptionView(CreateView):
 
     def get_success_url(self) -> str:
         return reverse_lazy('options', kwargs={'question_pk': self.kwargs['question_pk']})
-      
-      
+
+
 class UpdateOptionView(UpdateView):
     template_name = 'website/option_form.html'
     model = Poll_Question_Options
@@ -207,10 +222,12 @@ class UpdateOptionView(UpdateView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Option updated successfully')
+        log.info('Option updated successfully')
         return super(UpdateOptionView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Option update failed')
+        log.error('Option update failed')
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -221,8 +238,8 @@ class UpdateOptionView(UpdateView):
 
     def get_success_url(self) -> str:
         return reverse_lazy('options', kwargs={'question_pk': self.kwargs['question_pk']})
-      
-      
+
+
 class DeleteOptionView(DeleteView):
     template_name = 'website/option_delete.html'
     model = Poll_Question_Options
@@ -230,10 +247,12 @@ class DeleteOptionView(DeleteView):
 
     def form_valid(self, form):
         messages.success(self.request, 'Option deleted successfully')
+        log.info('Option deleted successfully')
         return super(DeleteOptionView, self).form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Option deletion failed')
+        log.error('Option deletion failed')
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):

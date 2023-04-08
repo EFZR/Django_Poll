@@ -12,7 +12,7 @@ class PollForm(forms.ModelForm):
 
     class Meta:
         model = Poll
-        fields = ['title',]
+        fields = ['title', 'is_active']
 
 
 class Poll_Questions_Form(forms.ModelForm):
