@@ -3,9 +3,9 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .forms import PollForm, Poll_Questions_Form, Poll_Questions_Options_Form
-from .models import Poll, Poll_Questions, Poll_Question_Options
+from .models import Poll, Poll_Questions, Poll_Question_Options, Poll_Question_Responses
 from Logging.logger_base import log
 
 # get_success_url is a method that returns the URL to redirect to after processing a valid form.
@@ -260,15 +260,54 @@ class DeleteOptionView(DeleteView):
 class VoteView(TemplateView):
     template_name = 'website/response.html'
     context_object_name = 'response'
-    
+
     def get_context_data(self, **kwargs):
         context = super(VoteView, self).get_context_data(**kwargs)
         context['poll'] = poll = Poll.objects.get(id=self.kwargs['poll_pk'])
-        context['questions'] = questions = Poll_Questions.objects.filter(poll_id=poll.id)
+        context['questions'] = questions = Poll_Questions.objects.filter(
+            poll_id=poll.id)
+        self.rows = questions.count()
         options = []
         for question in questions:
-            options.append(Poll_Question_Options.objects.filter(question_id=question.id))
-            
+            options.append(Poll_Question_Options.objects.filter(
+                question_id=question.id))
+
         context['options'] = options
-            
         return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        my_object = []
+        questions = Poll_Questions.objects.filter(
+            poll_id=self.kwargs['poll_pk'])
+
+        if questions:
+            for question in questions:
+                poll_id = request.POST.get('poll_id', None)
+                question_id = request.POST.get(
+                    f'question_id{question.id}', None)
+                option_id = request.POST.get(f'option_id{question.id}', None)
+                user_id = self.request.user.id
+
+                if option_id and user_id and question_id and poll_id:
+                    my_object.append(Poll_Question_Responses(
+                        poll_id=poll_id, question_id=question_id, option_id=option_id, user_id=user_id))
+
+                else:
+                    messages.error(
+                        self.request, 'Response submission failed come back later')
+                    log.error(
+                        f'Response submission failed - Some values Are missing: (option: {option_id}) (user: {user_id}) (question: {question_id}) (poll: {poll_id})')
+                    return redirect('index')
+        else:
+            messages.error(self.request, 'Response submission failed come back later')
+            log.error('Response submission failed - No questions found')
+            return redirect('index')
+
+        Poll_Question_Responses.objects.bulk_create(my_object)
+        messages.success(self.request, 'Response submitted successfully')
+        log.info('Response submitted successfully')
+        return redirect('index')
