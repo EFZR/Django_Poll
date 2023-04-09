@@ -1,17 +1,53 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth import login
 from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .forms import PollForm, Poll_Questions_Form, Poll_Questions_Options_Form
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import PollForm, Poll_Questions_Form, Poll_Questions_Options_Form, LoginForm, SignUpForm
 from .models import Poll, Poll_Questions, Poll_Question_Options, Poll_Question_Responses
 from Logging.logger_base import log
 
 # get_success_url is a method that returns the URL to redirect to after processing a valid form.
 
 
-class IndexListView(ListView):
+class Login(LoginView):
+    template_name = 'website/login.html'
+    fields = '__all__'
+    redirect_authenticated_user = True
+    form_class = LoginForm
+
+    def get_success_url(self):
+        messages.success(self.request, 'Login successful')
+        log.info(f'User {self.request.user.username} registered successfully')
+        return reverse_lazy('index')
+
+
+class Register(FormView):
+    template_name = 'website/register.html'
+    form_class = SignUpForm
+    redirect_authenticated_user = True
+    success_url = reverse_lazy('index')
+
+    def form_valid(self, form):
+        user = form.save()
+        if user is not None:
+            messages.success(self.request, 'Registration successful')
+            log.info(f'User {user.username} registered successfully')
+            login(self.request, user)
+            
+        return super(Register, self).form_valid(form)
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return redirect('index')
+        return super(Register, self).get(*args, **kwargs)
+
+
+class IndexListView(LoginRequiredMixin, ListView):
     model = Poll
     context_object_name = 'polls'
     template_name = 'website/index.html'
@@ -20,13 +56,13 @@ class IndexListView(ListView):
         return Poll.objects.filter(is_active=True)
 
 
-class PollListView(ListView):
+class PollListView(LoginRequiredMixin, ListView):
     template_name = 'website/poll_list.html'
     model = Poll
     context_object_name = 'polls'
 
 
-class CreatePollView(CreateView):
+class CreatePollView(LoginRequiredMixin, CreateView):
     template_name = 'website/poll_form.html'
     model = Poll
     form_class = PollForm
@@ -44,7 +80,7 @@ class CreatePollView(CreateView):
         return super().form_invalid(form)
 
 
-class UpdatePollView(UpdateView):
+class UpdatePollView(LoginRequiredMixin, UpdateView):
     template_name = 'website/poll_form.html'
     model = Poll
     form_class = PollForm
@@ -61,7 +97,7 @@ class UpdatePollView(UpdateView):
         return super().form_invalid(form)
 
 
-class DeletePollView(DeleteView):
+class DeletePollView(LoginRequiredMixin, DeleteView):
     template_name = 'website/poll_delete.html'
     model = Poll
     success_url = reverse_lazy('polls')
@@ -78,7 +114,7 @@ class DeletePollView(DeleteView):
         return super().form_invalid(form)
 
 
-class QuestionListView(ListView):
+class QuestionListView(LoginRequiredMixin, ListView):
     model = Poll_Questions
     context_object_name = 'questions'
     template_name = 'website/question_list.html'
@@ -92,7 +128,7 @@ class QuestionListView(ListView):
         return Poll_Questions.objects.filter(poll_id=self.kwargs['poll_pk'])
 
 
-class CreateQuestionView(CreateView):
+class CreateQuestionView(LoginRequiredMixin, CreateView):
     template_name = 'website/question_form.html'
     model = Poll_Questions
     form_class = Poll_Questions_Form
@@ -117,7 +153,7 @@ class CreateQuestionView(CreateView):
         return reverse_lazy('questions', kwargs={'poll_pk': self.kwargs['poll_pk']})
 
 
-class UpdateQuestionView(UpdateView):
+class UpdateQuestionView(LoginRequiredMixin, UpdateView):
     template_name = 'website/question_form.html'
     model = Poll_Questions
     form_class = Poll_Questions_Form
@@ -141,7 +177,7 @@ class UpdateQuestionView(UpdateView):
         return reverse_lazy('questions', kwargs={'poll_pk': self.kwargs['poll_pk']})
 
 
-class DeleteQuestionView(DeleteView):
+class DeleteQuestionView(LoginRequiredMixin, DeleteView):
     template_name = 'website/question_delete.html'
     model = Poll_Questions
     context_object_name = 'question'
@@ -165,7 +201,7 @@ class DeleteQuestionView(DeleteView):
         return reverse_lazy('questions', kwargs={'poll_pk': self.kwargs['poll_pk']})
 
 
-class OptionListView(ListView):
+class OptionListView(LoginRequiredMixin, ListView):
     model = Poll_Question_Options
     context_object_name = 'options'
     template_name = 'website/option_list.html'
@@ -181,7 +217,7 @@ class OptionListView(ListView):
         return Poll_Question_Options.objects.filter(question_id=self.kwargs['question_pk'])
 
 
-class CreateOptionView(CreateView):
+class CreateOptionView(LoginRequiredMixin, CreateView):
     template_name = 'website/option_form.html'
     model = Poll_Question_Options
     form_class = Poll_Questions_Options_Form
@@ -207,7 +243,7 @@ class CreateOptionView(CreateView):
         return reverse_lazy('options', kwargs={'question_pk': self.kwargs['question_pk']})
 
 
-class UpdateOptionView(UpdateView):
+class UpdateOptionView(LoginRequiredMixin, UpdateView):
     template_name = 'website/option_form.html'
     model = Poll_Question_Options
     form_class = Poll_Questions_Options_Form
@@ -232,7 +268,7 @@ class UpdateOptionView(UpdateView):
         return reverse_lazy('options', kwargs={'question_pk': self.kwargs['question_pk']})
 
 
-class DeleteOptionView(DeleteView):
+class DeleteOptionView(LoginRequiredMixin, DeleteView):
     template_name = 'website/option_delete.html'
     model = Poll_Question_Options
     context_object_name = 'option'
@@ -257,7 +293,7 @@ class DeleteOptionView(DeleteView):
         return reverse_lazy('options', kwargs={'question_pk': self.kwargs['question_pk']})
 
 
-class VoteView(TemplateView):
+class VoteView(LoginRequiredMixin, TemplateView):
     template_name = 'website/response.html'
     context_object_name = 'response'
 
@@ -303,7 +339,8 @@ class VoteView(TemplateView):
                         f'Response submission failed - Some values Are missing: (option: {option_id}) (user: {user_id}) (question: {question_id}) (poll: {poll_id})')
                     return redirect('index')
         else:
-            messages.error(self.request, 'Response submission failed come back later')
+            messages.error(
+                self.request, 'Response submission failed come back later')
             log.error('Response submission failed - No questions found')
             return redirect('index')
 

@@ -1,0 +1,49 @@
+{% extends 'website/base.html' %}
+{% block content %}
+<form method="POST">
+  <div class="col-6 offset-3">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-center"><b><i>Register</i></b></h3>
+      </div>
+      <div class="card-body">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          The Form has errors
+          {% for field in form %}
+          {% if field.errors %}
+          {{field.errors}}
+          {% endif %}
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        {% csrf_token %}
+        <div class="mb-1">
+          {{ form.username }}
+        </div>
+        <div class="mb-1">
+          {{ form.first_name }}
+        </div>
+        <div class="mb-1">
+          {{ form.last_name }}
+        </div>
+        <div class="mb-1">
+          {{ form.email }}
+        </div>
+        <div class="mb-1">
+          {{ form.password1 }}
+        </div>
+        <div class="mb-1">
+          {{ form.password2 }}
+        </div>
+      </div>
+      <div class="card-footer text-center">
+        <button type="submit" class="btn btn-primary">Register</button>
+        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

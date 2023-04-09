@@ -10,7 +10,9 @@
 </head>
 
 <body>
+  {% if request.user.is_authenticated %}
   {% include 'website/navbar.html' %}
+  {% endif %}
   <div class="container mt-5">
     {% if messages %}
     {% for message in messages %}
