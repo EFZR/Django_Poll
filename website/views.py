@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.db.models import Count, Prefetch
 from django.contrib import messages
 from django.contrib.auth import login
 from django.views.generic.base import TemplateView
@@ -38,7 +39,7 @@ class Register(FormView):
             messages.success(self.request, 'Registration successful')
             log.info(f'User {user.username} registered successfully')
             login(self.request, user)
-            
+
         return super(Register, self).form_valid(form)
 
     def get(self, *args, **kwargs):
@@ -294,7 +295,7 @@ class DeleteOptionView(LoginRequiredMixin, DeleteView):
 
 
 class VoteView(LoginRequiredMixin, TemplateView):
-    template_name = 'website/response.html'
+    template_name = 'website/vote.html'
     context_object_name = 'response'
 
     def get_context_data(self, **kwargs):
@@ -319,7 +320,7 @@ class VoteView(LoginRequiredMixin, TemplateView):
         my_object = []
         questions = Poll_Questions.objects.filter(
             poll_id=self.kwargs['poll_pk'])
-
+        # insert multiple lines in a table using django bulk_create() method
         if questions:
             for question in questions:
                 poll_id = request.POST.get('poll_id', None)
@@ -348,3 +349,14 @@ class VoteView(LoginRequiredMixin, TemplateView):
         messages.success(self.request, 'Response submitted successfully')
         log.info('Response submitted successfully')
         return redirect('index')
+
+
+class DashboardsView(LoginRequiredMixin, TemplateView):
+    template_name = 'website/dashboards.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DashboardsView, self).get_context_data(**kwargs)
+        context['options'] = Poll_Question_Responses.objects.select_related(
+            'poll', 'question', 'option').values(
+            'poll__title', 'question__question_text', 'option__option_text', 'option__id').annotate(votes=Count('option_id')).order_by('option_id')
+        return context
