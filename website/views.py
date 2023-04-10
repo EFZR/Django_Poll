@@ -358,5 +358,5 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
         context = super(DashboardsView, self).get_context_data(**kwargs)
         context['options'] = Poll_Question_Responses.objects.select_related(
             'poll', 'question', 'option').values(
-            'poll__title', 'question__question_text', 'option__option_text', 'option__id').annotate(votes=Count('option_id')).order_by('option_id')
+            'poll__title', 'question__question_text', 'option__option_text', 'option__id').annotate(votes=Count('option_id')).order_by('option_id').filter(question_id=2)
         return context

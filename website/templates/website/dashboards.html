@@ -6,7 +6,6 @@
     <th>Survey</th>
     <th>Question</th>
     <th>Option</th>
-    <th>Option id<htd>
     <th>Votes</th>
   </tr>
 {% for option in options %}
@@ -14,7 +13,6 @@
     <td>{{option.poll__title}}</td>
     <td>{{option.question__question_text}}</td>
     <td>{{option.option__option_text}}</td>
-    <td>{{option.option__id}}</td>
     <td>{{option.votes}}</td>
   </tr>
 {% endfor %}
