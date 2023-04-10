@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.db.models import Count, Prefetch
+from django.db.models import Count
 from django.contrib import messages
 from django.contrib.auth import login
 from django.views.generic.base import TemplateView
@@ -356,7 +356,29 @@ class DashboardsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(DashboardsView, self).get_context_data(**kwargs)
-        context['options'] = Poll_Question_Responses.objects.select_related(
-            'poll', 'question', 'option').values(
-            'poll__title', 'question__question_text', 'option__option_text', 'option__id').annotate(votes=Count('option_id')).order_by('option_id').filter(question_id=2)
+        proglang_chart = Poll_Question_Responses.objects.select_related(
+            'poll', 'question', 'option').values('option__option_text', 'option__id').annotate(votes=Count('option_id')).order_by('option_id').filter(question_id=2)
+        progperson_chart = Poll_Question_Responses.objects.select_related(
+            'poll', 'question', 'option').values('option__option_text', 'option__id').annotate(votes=Count('option_id')).order_by('option_id').filter(question_id=1)
+
+        labels = []
+        data = []
+
+        for option in proglang_chart:
+            labels.append(option['option__option_text'])
+            data.append(option['votes'])
+
+        context['labels_proglang_chart'] = labels
+        context['data_proglang_chart'] = data
+        
+        labels = []
+        data = []
+
+        for option in progperson_chart:
+            labels.append(option['option__option_text'])
+            data.append(option['votes'])
+
+        context['labels_progperson_chart'] = labels
+        context['data_progperson_chart'] = data
+
         return context

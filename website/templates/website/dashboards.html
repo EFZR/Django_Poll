@@ -1,21 +1,21 @@
 {% extends 'website/base.html' %}
 {% block content %}
 
-<table class="table">
-  <tr>
-    <th>Survey</th>
-    <th>Question</th>
-    <th>Option</th>
-    <th>Votes</th>
-  </tr>
-{% for option in options %}
-  <tr>
-    <td>{{option.poll__title}}</td>
-    <td>{{option.question__question_text}}</td>
-    <td>{{option.option__option_text}}</td>
-    <td>{{option.votes}}</td>
-  </tr>
-{% endfor %}
-</table>
-<div id="myChart"></div>
+<div class="row">
+  <div class="col-6">
+    <b><i>
+        <h5 class="text-center">Favorite Programming Language</h5>
+      </i></b><br>
+    <canvas id="myChart-ProgLang"></canvas>
+  </div>
+
+  <div class="col-6">
+    <b><i>
+        <h5 class="text-center">Persons Programming</h5>
+      </i></b><br>
+    <canvas id="myChart-ProgPerson"></canvas>
+  </div>
+</div>
+
+{% include 'website/chart.html' %}
 {% endblock %}
